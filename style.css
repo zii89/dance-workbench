@@ -424,13 +424,13 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
   /* 首页 hero 内容下移避开悬浮按钮 */
   .hero-card { padding: 60px 16px 22px; }
   /* 面板容器：内容上下留白 */
-  .panel { padding: 16px 14px 32px; min-height: 100vh; }
+  .panel { padding: 16px 14px calc(32px + env(safe-area-inset-bottom)); min-height: 100vh; }
 
   /* 头部按钮缩小 */
   .btn-primary { padding: 9px 16px; }
 
   /* 首页 Hero */
-  .hero-card { padding: 22px 16px; }
+  .hero-card { padding: 60px 16px 22px; }
   .hero-greeting { font-size: 20px; }
   .hero-avatar { font-size: 44px; }
 
@@ -442,6 +442,8 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
   .timetable { min-width: 560px; }
 
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .bottom-nav { display: none !important; }
 }
 
 @media (min-width: 768px) {
