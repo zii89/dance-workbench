@@ -429,10 +429,11 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
   /* 头部按钮缩小 */
   .btn-primary { padding: 9px 16px; }
 
-  /* 首页 Hero */
-  .hero-card { padding: 60px 16px 22px; }
-  .hero-greeting { font-size: 20px; }
-  .hero-avatar { font-size: 44px; }
+  /* 首页 Hero：竖排居中，卡片更协调 */
+  .hero-card { padding: 54px 16px 26px; }
+  .hero-content { flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 12px; }
+  .hero-avatar { font-size: 52px; }
+  .hero-greeting { font-size: 22px; }
 
   /* 弹窗 → 底部弹出 */
   .modal { align-items: flex-end; padding: 0; }
