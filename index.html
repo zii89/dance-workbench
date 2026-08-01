@@ -88,6 +88,7 @@
         <button class="menu-btn" onclick="toggleSidebarCollapse()">
           <span class="hamburger"></span>
         </button>
+        <span class="mobile-title" id="mobileTitle">首页</span>
       </header>
 
       <!-- ========== 首页 ========== -->
@@ -237,6 +238,16 @@
       </section>
     </main>
   </div>
+
+  <!-- ========== 底部 Tab 导航（移动端 App 风格） ========== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <a class="bottom-nav-item active" data-view="home" onclick="navTo('home')"><span class="bn-icon">🏠</span><span class="bn-text">首页</span></a>
+    <a class="bottom-nav-item" data-view="dance" onclick="navTo('dance')"><span class="bn-icon">💃</span><span class="bn-text">舞蹈</span></a>
+    <a class="bottom-nav-item" data-view="mood" onclick="navTo('mood')"><span class="bn-icon">😊</span><span class="bn-text">心情</span></a>
+    <a class="bottom-nav-item" data-view="moments" onclick="navTo('moments')"><span class="bn-icon">📸</span><span class="bn-text">动态</span></a>
+    <a class="bottom-nav-item" data-view="diary" onclick="navTo('diary')"><span class="bn-icon">📝</span><span class="bn-text">日记</span></a>
+    <a class="bottom-nav-item" data-view="profile" onclick="navTo('profile')"><span class="bn-icon">👤</span><span class="bn-text">我的</span></a>
+  </nav>
 
   <!-- ========== 舞蹈弹窗 ========== -->
   <div id="danceModal" class="modal hidden">
