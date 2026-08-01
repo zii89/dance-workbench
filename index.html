@@ -352,6 +352,17 @@
     </div>
   </div>
 
+  <!-- ========== 朋友圈详情弹窗 ========== -->
+  <div id="momentDetailModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📸 动态详情</h3>
+        <button class="close-btn" onclick="hideModal('momentDetailModal')">✕</button>
+      </div>
+      <div class="modal-form" id="momentDetailBody"></div>
+    </div>
+  </div>
+
   <!-- ========== 日记弹窗 ========== -->
   <div id="diaryModal" class="modal hidden">
     <div class="modal-content">
@@ -375,6 +386,7 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
+  <div class="version-badge">v33</div>
 
   <script src="db.js"></script>
   <script src="seed.js"></script>

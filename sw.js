@@ -1,4 +1,4 @@
-const CACHE = 'dance-workbench-v32';
+const CACHE = 'dance-workbench-v33';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
