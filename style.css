@@ -425,6 +425,14 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
 .bottom-nav-item.active .bn-icon { transform: translateY(-1px); filter: grayscale(0) drop-shadow(0 2px 6px rgba(179,136,235,0.5)); }
 .bottom-nav-item:active { transform: scale(0.94); }
 
+/* ===== Version badge ===== */
+.version-badge {
+  position: fixed; right: 10px; bottom: calc(66px + env(safe-area-inset-bottom));
+  font-size: 10px; color: rgba(107,33,168,0.4);
+  background: rgba(243,232,255,0.7); padding: 2px 8px; border-radius: 10px;
+  z-index: 120; pointer-events: none; user-select: none;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 767px) {
   :root { --sidebar-w: 240px; }
