@@ -1,4 +1,4 @@
-const CACHE = 'dance-workbench-v31';
+const CACHE = 'dance-workbench-v32';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -21,17 +21,14 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== location.origin) return;
 
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const fetched = fetch(e.request)
-        .then(res => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then(c => c.put(e.request, copy));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || fetched;
-    })
+    fetch(e.request)
+      .then(res => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
