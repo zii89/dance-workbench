@@ -4,6 +4,9 @@ let currentWeek = 1;
 let currentStyle = 'all';
 let selectedMood = null;
 let profile = { nickname: 'zii', bio: '', avatar: null };
+let editingDanceId = null;
+let editingMomentId = null;
+let viewingMomentId = null;
 
 /* ====== 本地数据读写（localStorage 存文字，IndexedDB 存媒体） ====== */
 function loadData(key, fb) { try { return JSON.parse(localStorage.getItem(key)) ?? fb; } catch { return fb; } }
@@ -79,8 +82,8 @@ function updateProfileUI() {
   if (profile.avatar) {
     MediaDB.objectUrl(profile.avatar).then(url => {
       if (!url) return;
-      document.getElementById('sidebarAvatar').innerHTML = '<img src="' + url + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">';
-      document.getElementById('homeAvatar').innerHTML = '<img src="' + url + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">';
+      document.getElementById('sidebarAvatar').innerHTML = '<img src="' + url + '" class="avatar-mini">';
+      document.getElementById('homeAvatar').innerHTML = '<img src="' + url + '" class="avatar-hero">';
     });
   }
 }
@@ -212,7 +215,7 @@ async function loadDanceList() {
       ${r.note ? `<div class="card-body">${esc(r.note)}</div>` : ''}
       <div class="card-meta">📅 ${r.date}</div>
       ${videoHtml}
-      <div class="card-actions"><button class="btn-delete" onclick="deleteDance('${r.id}')">🗑️ 删除</button></div>
+      <div class="card-actions"><button class="btn-delete" onclick="editDance('${r.id}')">✏️ 编辑</button><button class="btn-delete" onclick="deleteDance('${r.id}')">🗑️ 删除</button></div>
     </div>`;
   }).join('');
   attachMediaAll(el);
@@ -229,7 +232,32 @@ function attachMediaAll(root) {
 
 function filterDance(style) { currentStyle = style; document.querySelectorAll('.style-tab').forEach(t => t.classList.toggle('active', t.dataset.style === style)); loadDanceList(); }
 async function deleteDance(id) { if (!confirm('确定删除？')) return; const list = loadData('dw_records', []); const r = list.find(x => x.id === id); if (r && r.video) await MediaDB.remove(r.video); saveData('dw_records', list.filter(x => x.id !== id)); loadDanceList(); showToast('已删除 🗑️'); }
-function showDanceModal() { document.getElementById('danceModal').classList.remove('hidden'); }
+function showDanceModal() {
+  editingDanceId = null;
+  document.getElementById('danceForm').reset();
+  document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
+  document.querySelector('#danceModal h3').textContent = '🩰 新的舞蹈记录';
+  document.getElementById('danceSubmitBtn').textContent = '✨ 保存';
+  const txt = document.querySelector('#danceUploadArea .upload-text');
+  if (txt) txt.textContent = '点击选择视频';
+  document.getElementById('danceModal').classList.remove('hidden');
+}
+
+function editDance(id) {
+  const list = loadData('dw_records', []);
+  const r = list.find(x => x.id === id);
+  if (!r) return;
+  editingDanceId = id;
+  document.getElementById('fTitle').value = r.title || '';
+  document.getElementById('fStyle').value = r.style || '';
+  document.getElementById('fDate').value = r.date || new Date().toISOString().slice(0, 10);
+  document.getElementById('fNote').value = r.note || '';
+  document.querySelector('#danceModal h3').textContent = '✏️ 编辑舞蹈记录';
+  document.getElementById('danceSubmitBtn').textContent = '💾 保存修改';
+  const txt = document.querySelector('#danceUploadArea .upload-text');
+  if (txt) txt.textContent = r.video ? '已选视频（重新选择可替换）' : '点击选择视频';
+  document.getElementById('danceModal').classList.remove('hidden');
+}
 
 /* ====== 练舞日历 ====== */
 let calYear = new Date().getFullYear();
@@ -306,26 +334,48 @@ async function submitDance(e) {
   e.preventDefault();
   setBtnLoading('danceSubmitBtn', true);
   try {
-    const record = {
-      id: crypto.randomUUID ? crypto.randomUUID() : MediaDB.genKey(),
-      title: document.getElementById('fTitle').value,
-      style: document.getElementById('fStyle').value,
-      date: document.getElementById('fDate').value,
-      note: document.getElementById('fNote').value,
-      createdAt: Date.now(),
-      video: null,
-      videoSize: 0
-    };
+    const title = document.getElementById('fTitle').value;
+    const style = document.getElementById('fStyle').value;
+    const date = document.getElementById('fDate').value;
+    const note = document.getElementById('fNote').value;
     const v = document.getElementById('fVideo').files[0];
-    if (v) {
-      record.video = MediaDB.genKey();
-      record.videoSize = v.size;
-      await MediaDB.put(record.video, v);
-    }
+
     const list = loadData('dw_records', []);
-    list.push(record);
+    let record;
+
+    if (editingDanceId) {
+      const idx = list.findIndex(x => x.id === editingDanceId);
+      if (idx < 0) { showToast('记录不存在'); return; }
+      record = list[idx];
+      record.title = title;
+      record.style = style;
+      record.date = date;
+      record.note = note;
+      if (v) {
+        if (record.video) await MediaDB.remove(record.video);
+        record.video = MediaDB.genKey();
+        record.videoSize = v.size;
+        await MediaDB.put(record.video, v);
+      }
+      list[idx] = record;
+    } else {
+      record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : MediaDB.genKey(),
+        title, style, date, note,
+        createdAt: Date.now(),
+        video: null,
+        videoSize: 0
+      };
+      if (v) {
+        record.video = MediaDB.genKey();
+        record.videoSize = v.size;
+        await MediaDB.put(record.video, v);
+      }
+      list.push(record);
+    }
+
     saveData('dw_records', list);
-    showToast('记录成功！✨'); hideModal('danceModal');
+    showToast(editingDanceId ? '已保存修改 ✨' : '记录成功！✨'); hideModal('danceModal');
     document.getElementById('danceForm').reset();
     document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
     loadDanceList(); loadDanceCal();
@@ -402,7 +452,20 @@ async function loadMomentsList() {
       mediaHtml = `<div class="${cls}">${m.images.map((img, i) => `<img data-img="${img}" onclick="viewGallery(${imgArr}, ${i})">`).join('')}</div>`;
     }
     if (m.video) { mediaHtml += `<div class="moment-video"><video controls preload="metadata" data-media="${m.video}"></video></div>`; }
-    return `<div class="card">${mediaHtml}<div class="card-body">${esc(m.content)}</div><div class="card-meta">📅 ${m.date}</div><div class="card-actions"><button class="btn-delete" onclick="deleteMoment('${m.id}')">🗑️ 删除</button></div></div>`;
+    const comments = (m.comments || []).map(c =>
+      `<div class="moment-comment"><span class="mc-text">${esc(c.text)}</span><span class="mc-time">${fmtTime(c.time)}</span></div>`
+    ).join('');
+    return `<div class="card moment-card">
+      ${mediaHtml}
+      <div class="moment-content" onclick="viewMomentDetail('${m.id}')">${esc(m.content)}</div>
+      <div class="card-meta">📅 ${m.date}</div>
+      <div class="moment-comments">${comments}</div>
+      <div class="moment-comment-box">
+        <input type="text" id="cmtInput_${m.id}" placeholder="写评论..." maxlength="200" onkeydown="if(event.key==='Enter')addMomentComment('${m.id}')">
+        <button class="btn-primary btn-sm" onclick="addMomentComment('${m.id}')">评论</button>
+      </div>
+      <div class="card-actions"><button class="btn-delete" onclick="viewMomentDetail('${m.id}')">👁️ 详情</button><button class="btn-delete" onclick="editMoment('${m.id}')">✏️ 编辑</button><button class="btn-delete" onclick="deleteMoment('${m.id}')">🗑️ 删除</button></div>
+    </div>`;
   }).join('');
   attachMediaAll(el);
 }
@@ -418,7 +481,99 @@ async function deleteMoment(id) {
   loadMomentsList(); showToast('已删除 🗑️');
 }
 
-function showMomentModal() { document.getElementById('momentModal').classList.remove('hidden'); }
+function addMomentComment(id) {
+  const inp = document.getElementById('cmtInput_' + id);
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) { showToast('评论不能为空'); return; }
+  const list = loadData('dw_moments', []);
+  const m = list.find(x => x.id === id);
+  if (!m) return;
+  if (!m.comments) m.comments = [];
+  m.comments.push({ text, time: Date.now() });
+  saveData('dw_moments', list);
+  loadMomentsList(); showToast('评论成功 💬');
+}
+
+function viewMomentDetail(id) {
+  const list = loadData('dw_moments', []);
+  const m = list.find(x => x.id === id);
+  if (!m) return;
+  viewingMomentId = id;
+  const body = document.getElementById('momentDetailBody');
+  let mediaHtml = '';
+  if (m.images && m.images.length) {
+    const cls = m.images.length === 1 ? 'moment-images single' : 'moment-images';
+    const imgArr = JSON.stringify(m.images).replace(/"/g, '&quot;');
+    mediaHtml = `<div class="${cls}">${m.images.map((img, i) => `<img data-img="${img}" onclick="viewGallery(${imgArr}, ${i})">`).join('')}</div>`;
+  }
+  if (m.video) { mediaHtml += `<div class="moment-video"><video controls preload="metadata" data-media="${m.video}"></video></div>`; }
+  const comments = (m.comments || []).map(c =>
+    `<div class="moment-comment"><span class="mc-text">${esc(c.text)}</span><span class="mc-time">${fmtTime(c.time)}</span></div>`
+  ).join('') || '<div class="moment-comments-empty">还没有评论，来抢沙发～</div>';
+  body.innerHTML = `
+    <div class="moment-content">${esc(m.content)}</div>
+    ${mediaHtml}
+    <div class="card-meta">📅 ${m.date}</div>
+    <div class="moment-comments">${comments}</div>
+    <div class="moment-comment-box">
+      <input type="text" id="cmtDetailInput" placeholder="写评论..." maxlength="200" onkeydown="if(event.key==='Enter')addDetailComment()">
+      <button class="btn-primary btn-sm" onclick="addDetailComment()">评论</button>
+    </div>
+  `;
+  attachMediaAll(body);
+  document.getElementById('momentDetailModal').classList.remove('hidden');
+}
+
+function addDetailComment() {
+  const inp = document.getElementById('cmtDetailInput');
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) { showToast('评论不能为空'); return; }
+  const list = loadData('dw_moments', []);
+  const m = list.find(x => x.id === viewingMomentId);
+  if (!m) return;
+  if (!m.comments) m.comments = [];
+  m.comments.push({ text, time: Date.now() });
+  saveData('dw_moments', list);
+  viewMomentDetail(viewingMomentId); showToast('评论成功 💬');
+  loadMomentsList();
+}
+
+function fmtTime(t) {
+  if (!t) return '';
+  const d = new Date(t);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getMonth() + 1}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function showMomentModal() {
+  editingMomentId = null;
+  document.getElementById('momentForm').reset();
+  document.getElementById('imagePreview').innerHTML = '';
+  document.querySelector('#momentModal h3').textContent = '📸 发动态';
+  document.getElementById('momentSubmitBtn').textContent = '✨ 发布';
+  const it = document.querySelector('#momentUploadArea .upload-text');
+  if (it) it.textContent = '点击选择图片';
+  const vt = document.querySelector('#momentVideoArea .upload-text');
+  if (vt) vt.textContent = '点击选择视频';
+  document.getElementById('momentModal').classList.remove('hidden');
+}
+
+function editMoment(id) {
+  const list = loadData('dw_moments', []);
+  const m = list.find(x => x.id === id);
+  if (!m) return;
+  editingMomentId = id;
+  document.getElementById('fMomentContent').value = m.content || '';
+  document.querySelector('#momentModal h3').textContent = '✏️ 编辑动态';
+  document.getElementById('momentSubmitBtn').textContent = '💾 保存修改';
+  const it = document.querySelector('#momentUploadArea .upload-text');
+  if (it) it.textContent = m.images && m.images.length ? `已选 ${m.images.length} 张图（重新选择可替换）` : '点击选择图片';
+  const vt = document.querySelector('#momentVideoArea .upload-text');
+  if (vt) vt.textContent = m.video ? '已选视频（重新选择可替换）' : '点击选择视频';
+  document.getElementById('momentModal').classList.remove('hidden');
+}
 
 async function submitMoment(e) {
   e.preventDefault();
@@ -426,6 +581,8 @@ async function submitMoment(e) {
   setBtnLoading('momentSubmitBtn', true);
   btn.innerHTML = '⏳ 0%';
   try {
+    const content = document.getElementById('fMomentContent').value;
+    const list = loadData('dw_moments', []);
     const images = [];
     const imgFiles = document.getElementById('fMomentImages').files;
     for (let i = 0; i < Math.min(imgFiles.length, 9); i++) {
@@ -436,16 +593,33 @@ async function submitMoment(e) {
     const vfile = document.getElementById('fMomentVideo').files[0];
     let video = null;
     if (vfile) { video = MediaDB.genKey(); await MediaDB.put(video, vfile); }
-    const list = loadData('dw_moments', []);
-    list.push({
-      id: crypto.randomUUID ? crypto.randomUUID() : MediaDB.genKey(),
-      content: document.getElementById('fMomentContent').value,
-      date: new Date().toISOString().slice(0, 10),
-      createdAt: Date.now(),
-      images, video, likes: 0
-    });
+    let record;
+    if (editingMomentId) {
+      const idx = list.findIndex(x => x.id === editingMomentId);
+      if (idx < 0) { showToast('动态不存在'); return; }
+      record = list[idx];
+      if (images.length) {
+        if (record.images) for (const k of record.images) await MediaDB.remove(k);
+        record.images = images;
+      }
+      if (video) {
+        if (record.video) await MediaDB.remove(record.video);
+        record.video = video;
+      }
+      record.content = content;
+      list[idx] = record;
+    } else {
+      record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : MediaDB.genKey(),
+        content,
+        date: new Date().toISOString().slice(0, 10),
+        createdAt: Date.now(),
+        images, video, likes: 0, comments: []
+      };
+      list.push(record);
+    }
     saveData('dw_moments', list);
-    showToast('动态已发布 ✨'); hideModal('momentModal');
+    showToast(editingMomentId ? '已保存修改 ✨' : '动态已发布 ✨'); hideModal('momentModal');
     document.getElementById('momentForm').reset();
     document.getElementById('imagePreview').innerHTML = '';
     loadMomentsList();
