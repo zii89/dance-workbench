@@ -51,9 +51,6 @@ function restoreSidebarCollapse() {
 }
 
 function navTo(view) {
-  const titles = { home: '首页', dance: '今天舞一下', mood: '今日心情', moments: 'zii的朋友圈', diary: '我的日记', schedule: '我的课表', profile: '个人中心' };
-  const mt = document.getElementById('mobileTitle');
-  if (mt) mt.textContent = titles[view] || 'zii每日记录';
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
