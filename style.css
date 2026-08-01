@@ -445,10 +445,10 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
   /* 头部按钮缩小 */
   .btn-primary { padding: 9px 16px; }
 
-  /* 首页 Hero：蝴蝶在前、文字在后，横排，卡片更紧凑 */
-  .hero-card { padding: 54px 16px 16px; }
-  .hero-content { flex-direction: row; justify-content: flex-start; align-items: center; gap: 14px; text-align: left; }
-  .hero-avatar { font-size: 44px; }
+  /* 首页 Hero：蝴蝶在前、文字在后，整体水平垂直居中，卡片紧凑 */
+  .hero-card { display: flex; align-items: center; justify-content: center; padding: 40px 14px 40px; }
+  .hero-content { flex-direction: row; justify-content: center; align-items: center; gap: 12px; text-align: left; }
+  .hero-avatar { font-size: 40px; line-height: 1; }
   .hero-greeting { font-size: 20px; }
 
   /* 弹窗 → 底部弹出 */
