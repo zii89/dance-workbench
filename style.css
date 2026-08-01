@@ -254,8 +254,24 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
 .card-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px; }
 .card-meta { font-size: 11px; color: var(--text-secondary); }
 .card-video video { width: 100%; border-radius: 10px; background: #000; max-height: 220px; object-fit: contain; margin-bottom: 8px; }
-.card-actions { display: flex; gap: 8px; margin-top: 8px; }
+.card-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
 .btn-delete { font-size: 12px; color: #f87171; background: none; border: none; cursor: pointer; padding: 4px 0; }
+.btn-delete:first-of-type { color: var(--primary-dark); }
+
+/* ===== Moments ===== */
+.moment-card .moment-content { font-size: 14px; line-height: 1.7; margin-bottom: 8px; cursor: pointer; }
+.moment-comments { margin: 8px 0; padding: 8px 10px; background: #f9f7ff; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+.moment-comment { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; }
+.moment-comment .mc-text { flex: 1; color: var(--text); word-break: break-all; }
+.moment-comment .mc-time { font-size: 10px; color: var(--text-secondary); flex-shrink: 0; }
+.moment-comments-empty { font-size: 12px; color: var(--text-secondary); text-align: center; padding: 4px 0; }
+.moment-comment-box { display: flex; gap: 8px; margin-top: 4px; }
+.moment-comment-box input {
+  flex: 1; padding: 8px 12px; border: 2px solid #f3e8ff; border-radius: 18px;
+  font-size: 13px; font-family: inherit; background: var(--bg); color: var(--text); outline: none;
+}
+.moment-comment-box input:focus { border-color: var(--primary); }
+.btn-sm { padding: 7px 14px; border-radius: 16px; font-size: 12px; flex-shrink: 0; }
 
 /* ===== Moments images ===== */
 .moment-images { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
@@ -429,11 +445,11 @@ body:not(.sidebar-collapsed) .sidebar-expand-btn { left: calc(var(--sidebar-w) +
   /* 头部按钮缩小 */
   .btn-primary { padding: 9px 16px; }
 
-  /* 首页 Hero：竖排居中，卡片更协调 */
-  .hero-card { padding: 54px 16px 26px; }
-  .hero-content { flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 12px; }
-  .hero-avatar { font-size: 52px; }
-  .hero-greeting { font-size: 22px; }
+  /* 首页 Hero：蝴蝶在前、文字在后，横排，卡片更紧凑 */
+  .hero-card { padding: 54px 16px 16px; }
+  .hero-content { flex-direction: row; justify-content: flex-start; align-items: center; gap: 14px; text-align: left; }
+  .hero-avatar { font-size: 44px; }
+  .hero-greeting { font-size: 20px; }
 
   /* 弹窗 → 底部弹出 */
   .modal { align-items: flex-end; padding: 0; }
